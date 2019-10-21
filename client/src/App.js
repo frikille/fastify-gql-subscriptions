@@ -24,21 +24,33 @@ const VOTE_ADDED = gql`
   }
 `;
 
-const App = () => (
-  <Query query={GET_VOTES}>
-    {({ data, loading }) => {
-      if (!data) {
-        return null;
-      }
+const App = () => {
+  const [hideVotes, setHideVotes] = useState(false);
 
-      if (loading) {
-        return <span>Loading ...</span>;
-      }
+  setTimeout(() => {
+    setHideVotes(true);
+  }, 10000);
 
-      return <Votes votes={data.votes} />;
-    }}
-  </Query>
-);
+  if (hideVotes) {
+    return <div>That's it</div>;
+  }
+
+  return (
+    <Query query={GET_VOTES}>
+      {({ data, loading }) => {
+        if (!data) {
+          return null;
+        }
+
+        if (loading) {
+          return <span>Loading ...</span>;
+        }
+
+        return <Votes votes={data.votes} />;
+      }}
+    </Query>
+  );
+};
 
 function Votes(props) {
   const { votes } = props;

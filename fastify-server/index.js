@@ -4,13 +4,12 @@ const mq = require('mqemitter');
 const Subscriber = require('./pubsub');
 
 const emitter = mq();
-const pubsub = new Subscriber(emitter);
 
 const app = fastify();
 
 const votes = [];
 
-for (let i = 1; i <= 10; i++) {
+for (let i = 1; i <= 3; i++) {
   votes.push({ id: i, title: `Vote #${i}`, ayes: 0, noes: 0 });
 }
 
@@ -74,9 +73,7 @@ const resolvers = {
               voteAdded: votes[voteId - 1]
             }
           },
-          () => {
-            console.log('emit callback');
-          }
+          () => {}
         );
         return votes[voteId - 1];
       }
@@ -90,11 +87,8 @@ const resolvers = {
       //   return parent.voteAdded;
       // },
       subscribe: (root, args, context) => {
-        // console.log('subscribe handler', { context });
-        // Must return an async iterator
-        const { iterator } = pubsub.subscribe(`VOTE_ADDED_${args.voteId}`);
-
-        return iterator;
+        const { pubsub } = context;
+        return pubsub.subscribe(`VOTE_ADDED_${args.voteId}`);
       }
     }
   }
@@ -103,8 +97,8 @@ const resolvers = {
 app.register(GQL, {
   schema,
   resolvers,
-  graphiql: true,
-  subscription: true
+  subscription: true,
+  subscriber: new Subscriber(emitter)
 });
 
 app.get('/', async function(req, reply) {
